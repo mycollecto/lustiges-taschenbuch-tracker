@@ -79,27 +79,31 @@ jobs:
               return {}
 
             covers = {}
-            # Find pairs: link to LTB page + nearby thumb image
-            # Strategy: find all gallery list items
-            # Extract number directly from image filename - more reliable than from link
-            thumbs = re.findall(r'src="([^"]+/thumb/[^"]+)"', html)
-            for thumb in thumbs:
-              # Extract number from image filename
-              m = re.search(r'_(\d+)\.\w+/\d+px-', thumb)
-              if m:
-                n = int(m.group(1))
-                if 1 <= n <= count and n not in covers:
-                  covers[n] = thumb_to_full(thumb)
 
-            # Fallback: try broader search if too few found
+            # Strategy 1: parse individual <li> blocks - prevents off-by-one
+            li_blocks = re.findall(r'<li>(.*?)</li>', html, re.DOTALL)
+            for block in li_blocks:
+              href_m = re.search(link_pat, block + '"')
+              thumb_m = re.search(r'src="([^"]+/thumb/[^"]+)"', block)
+              if href_m and thumb_m:
+                n = int(href_m.group(1))
+                if 1 <= n <= count and n not in covers:
+                  covers[n] = thumb_to_full(thumb_m.group(1))
+
+            # Strategy 2: fallback - extract band number from image filename
             if len(covers) < count // 2:
-              all_thumbs = re.findall(r'src="([^"]+/thumb/[^"]+)"', html)
-              for thumb in all_thumbs:
-                m = re.search(r'[_\s](\d+)\.\w+(?:/|$)', thumb)
-                if m:
-                  n = int(m.group(1))
-                  if 1 <= n <= count and n not in covers:
-                    covers[n] = thumb_to_full(thumb)
+              print('  Fallback: image filename extraction')
+              for thumb in re.findall(r'src="([^"]+/thumb/[^"]+)"', html):
+                # Get just the original filename (after last real slash, before size suffix)
+                parts = thumb.split('/')
+                # thumb URL: .../thumb/a/ab/FILENAME.ext/NNpx-FILENAME.ext
+                if len(parts) >= 2:
+                  fname = parts[-2]  # original filename
+                  nums = re.findall(r'\d+', fname)
+                  if nums:
+                    n = int(nums[-1])
+                    if 1 <= n <= count and n not in covers:
+                      covers[n] = thumb_to_full(thumb)
 
             print('  Gefunden: ' + str(len(covers)) + '/' + str(count))
             return covers
