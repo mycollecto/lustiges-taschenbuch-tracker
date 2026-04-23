@@ -12,49 +12,59 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Ordner erstellen und alte Cover verschieben
+      - name: Ordner erstellen
         run: |
-          mkdir -p covers/haupt covers/spezial covers/enten covers/premium
-          mkdir -p covers/ultimat covers/maus covers/crime covers/abenteuer
-          mkdir -p covers/history covers/fantasy covers/galaxy covers/europa covers/mystery
+          mkdir -p covers/haupt covers/spezial covers/enten covers/premium covers/ultimat
+          mkdir -p covers/maus covers/crime covers/abenteuer covers/history covers/fantasy
+          mkdir -p covers/galaxy covers/europa covers/mystery covers/premplus covers/youngcom
+          mkdir -p covers/space covers/enstars covers/weihnacht covers/ostern covers/halloween
+          mkdir -p covers/advent covers/sommer covers/winter covers/royal covers/praesentiert
+          mkdir -p covers/classic covers/ducktales
           if ls covers/LTB_*.jpg 2>/dev/null | head -1 | grep -q .; then
             mv covers/LTB_*.jpg covers/haupt/
-            echo "Verschoben: $(ls covers/haupt/ | wc -l) Cover"
+            echo "Alte Cover verschoben: $(ls covers/haupt/ | wc -l)"
           fi
-          # Alle bestehenden Cover löschen damit sie korrekt neu geladen werden
-          echo "Lösche bestehende Cover für sauberen Neustart..."
-          find covers -type f | wc -l
-          find covers -type f -delete
-          echo "Gelöscht."
 
-      - name: Cover via Galerie-Seiten herunterladen
+      - name: Cover herunterladen
         run: |
           python3 << 'PYEOF'
-          import urllib.request, re, os, time
+          import urllib.request, re, os, time, hashlib
 
           BASE = 'https://de.duckipedia.org'
           HEADERS = {
             'Referer': 'https://de.duckipedia.org/',
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
             'Accept': 'text/html,application/xhtml+xml',
-            'Accept-Language': 'de-DE,de;q=0.9',
           }
 
-          # (key, count, duckipedia_article, link_pattern)
           SERIES = [
-            ('haupt',     610, 'Covergalerie_Lustiges_Taschenbuch',       r'/LTB_(\d+)"'),
-            ('spezial',   130, 'Lustiges_Taschenbuch_Spezial',            r'/LTB_Spezial_(\d+)"'),
-            ('enten',      95, 'Lustiges_Taschenbuch_Enten-Edition',      r'/LTB_Enten-Edition_(\d+)"'),
-            ('premium',    48, 'Lustiges_Taschenbuch_Premium',            r'/LTB_Premium_(\d+)"'),
-            ('ultimat',    48, 'Lustiges_Taschenbuch_Ultimate_Phantomias',r'/LTB_Ultimate_Phantomias_(\d+)"'),
-            ('maus',       30, 'Lustiges_Taschenbuch_Maus-Edition',       r'/LTB_Maus-Edition_(\d+)"'),
-            ('crime',      30, 'Lustiges_Taschenbuch_Crime',              r'/LTB_Crime_(\d+)"'),
-            ('abenteuer',  20, 'Lustiges_Taschenbuch_Abenteuer',          r'/LTB_Abenteuer_(\d+)"'),
-            ('history',     6, 'Lustiges_Taschenbuch_History',            r'/LTB_History_(\d+)"'),
-            ('fantasy',     6, 'Lustiges_Taschenbuch_Fantasy',            r'/LTB_Fantasy_(\d+)"'),
-            ('galaxy',      6, 'Lustiges_Taschenbuch_Galaxy',             r'/LTB_Galaxy_(\d+)"'),
-            ('europa',      6, 'Lustiges_Taschenbuch_Europareise',        r'/LTB_Europareise_(\d+)"'),
-            ('mystery',     6, 'Lustiges_Taschenbuch_Mystery',            r'/LTB_Mystery_(\d+)"'),
+            ('haupt',        610, 'Covergalerie_Lustiges_Taschenbuch',         r'/LTB_(\d+)"'),
+            ('spezial',      130, 'Lustiges_Taschenbuch_Spezial',              r'/LTB_Spezial_(\d+)"'),
+            ('enten',         95, 'Lustiges_Taschenbuch_Enten-Edition',        r'/LTB_Enten-Edition_(\d+)"'),
+            ('premium',       48, 'Lustiges_Taschenbuch_Premium',              r'/LTB_Premium_(\d+)"'),
+            ('ultimat',       48, 'Lustiges_Taschenbuch_Ultimate_Phantomias',  r'/LTB_Ultimate_Phantomias_(\d+)"'),
+            ('maus',          30, 'Lustiges_Taschenbuch_Maus-Edition',         r'/LTB_Maus-Edition_(\d+)"'),
+            ('crime',         30, 'Lustiges_Taschenbuch_Crime',                r'/LTB_Crime_(\d+)"'),
+            ('abenteuer',     20, 'Lustiges_Taschenbuch_Abenteuer',            r'/LTB_Abenteuer_(\d+)"'),
+            ('history',        6, 'Lustiges_Taschenbuch_History',              r'/LTB_History_(\d+)"'),
+            ('fantasy',        6, 'Lustiges_Taschenbuch_Fantasy',              r'/LTB_Fantasy_(\d+)"'),
+            ('galaxy',         6, 'Lustiges_Taschenbuch_Galaxy',               r'/LTB_Galaxy_(\d+)"'),
+            ('europa',         6, 'Lustiges_Taschenbuch_Europareise',          r'/LTB_Europareise_(\d+)"'),
+            ('mystery',        6, 'Lustiges_Taschenbuch_Mystery',              r'/LTB_Mystery_(\d+)"'),
+            ('premplus',       8, 'Lustiges_Taschenbuch_Premium_+',            r'/LTB_Premium_\+_(\d+)"'),
+            ('youngcom',      20, 'Lustiges_Taschenbuch_Young_Comics',         r'/LTB_Young_Comics_(\d+)"'),
+            ('space',          6, 'Lustiges_Taschenbuch_Space',                r'/LTB_Space_(\d+)"'),
+            ('enstars',       18, 'Lustiges_Taschenbuch_Entenhausen_Stars',    r'/LTB_Entenhausen_Stars_(\d+)"'),
+            ('weihnacht',     32, 'Lustiges_Taschenbuch_Weihnachten',          r'/LTB_Weihnachten_(\d+)"'),
+            ('ostern',        17, 'Lustiges_Taschenbuch_Ostern',               r'/LTB_Ostern_(\d+)"'),
+            ('halloween',     11, 'Lustiges_Taschenbuch_Halloween',            r'/LTB_Halloween_(\d+)"'),
+            ('advent',        11, 'Lustiges_Taschenbuch_Advent',               r'/LTB_Advent_(\d+)"'),
+            ('sommer',        15, 'Lustiges_Taschenbuch_Sommer',               r'/LTB_Sommer_(\d+)"'),
+            ('winter',         7, 'Lustiges_Taschenbuch_Winter',               r'/LTB_Winter_(\d+)"'),
+            ('royal',         13, 'Lustiges_Taschenbuch_Royal',                r'/LTB_Royal_(\d+)"'),
+            ('praesentiert',   8, 'Lustiges_Taschenbuch_praesentiert',         r'/LTB_pr.sentiert_(\d+)"'),
+            ('classic',       20, 'Lustiges_Taschenbuch_Classic_Edition',      r'/LTB_Classic_Edition_(\d+)"'),
+            ('ducktales',      4, 'Lustiges_Taschenbuch_DuckTales',            r'/LTB_DuckTales_(\d+)"'),
           ]
 
           def fetch_html(url):
@@ -62,53 +72,43 @@ jobs:
             with urllib.request.urlopen(req, timeout=20) as r:
               return r.read().decode('utf-8', errors='replace')
 
-          def thumb_to_full(thumb_url):
-            url = re.sub(r'/thumb/', '/', thumb_url)
+          def thumb_to_full(thumb):
+            url = re.sub(r'/thumb/', '/', thumb)
             url = re.sub(r'/\d+px-[^/]+$', '', url)
-            if not url.startswith('http'):
-              url = BASE + url
+            if not url.startswith('http'): url = BASE + url
             return url
 
-          def scrape_covers(article, link_pat, count):
+          def scrape(article, link_pat, count):
             url = BASE + '/' + article
-            print('  Fetching: ' + url)
             try:
               html = fetch_html(url)
             except Exception as e:
               print('  FEHLER: ' + str(e))
               return {}
-
             covers = {}
-
-            # Strategy 1: parse individual <li> blocks - prevents off-by-one
-            li_blocks = re.findall(r'<li>(.*?)</li>', html, re.DOTALL)
-            for block in li_blocks:
-              href_m = re.search(link_pat, block + '"')
-              thumb_m = re.search(r'src="([^"]+/thumb/[^"]+)"', block)
-              if href_m and thumb_m:
-                n = int(href_m.group(1))
+            # Strategy 1: li blocks with link+thumb
+            for block in re.findall(r'<li>(.*?)</li>', html, re.DOTALL):
+              hm = re.search(link_pat, block + '"')
+              tm = re.search(r'src="([^"]+/thumb/[^"]+)"', block)
+              if hm and tm:
+                n = int(hm.group(1))
                 if 1 <= n <= count and n not in covers:
-                  covers[n] = thumb_to_full(thumb_m.group(1))
-
-            # Strategy 2: fallback - extract band number from image filename
+                  covers[n] = thumb_to_full(tm.group(1))
+            # Strategy 2: filename-based
             if len(covers) < count // 2:
-              print('  Fallback: image filename extraction')
               for thumb in re.findall(r'src="([^"]+/thumb/[^"]+)"', html):
-                # Get just the original filename (after last real slash, before size suffix)
                 parts = thumb.split('/')
-                # thumb URL: .../thumb/a/ab/FILENAME.ext/NNpx-FILENAME.ext
                 if len(parts) >= 2:
-                  fname = parts[-2]  # original filename
+                  fname = parts[-2]
                   nums = re.findall(r'\d+', fname)
                   if nums:
                     n = int(nums[-1])
                     if 1 <= n <= count and n not in covers:
                       covers[n] = thumb_to_full(thumb)
-
-            print('  Gefunden: ' + str(len(covers)) + '/' + str(count))
+            print('  URLs: ' + str(len(covers)) + '/' + str(count))
             return covers
 
-          def download_cover(url, path):
+          def dl(url, path):
             req = urllib.request.Request(url, headers=HEADERS)
             with urllib.request.urlopen(req, timeout=20) as r:
               data = r.read()
@@ -118,43 +118,31 @@ jobs:
             return False
 
           total_ok = total_skip = 0
-
           for key, count, article, link_pat in SERIES:
-            print('\n=== ' + key + ' ===')
-            covers = scrape_covers(article, link_pat, count)
+            print('\n=== ' + key + ' (' + str(count) + ') ===')
+            covers = scrape(article, link_pat, count)
             ok = skip = 0
-
-            for n in range(1, count + 1):
-              # Skip if already exists
-              if any(os.path.exists('covers/' + key + '/LTB_' + str(n) + '.' + e)
-                     for e in ['jpg','JPG','jpeg','png','PNG']):
+            for n in range(1, count+1):
+              if any(os.path.exists('covers/'+key+'/LTB_'+str(n)+'.'+e) for e in ['jpg','JPG','jpeg','png','PNG']):
                 continue
-
               if n not in covers:
                 skip += 1
                 continue
-
               img_url = covers[n]
-              ext = (re.search(r'\.(\w+)$', img_url) or re.search(r'', '')).group(1) if re.search(r'\.(\w+)$', img_url) else 'jpg'
-              ext = ext.lower()
+              ext_m = re.search(r'\.(\w+)$', img_url)
+              ext = ext_m.group(1).lower() if ext_m else 'jpg'
               if ext == 'jpeg': ext = 'jpg'
-              path = 'covers/' + key + '/LTB_' + str(n) + '.' + ext
-
+              path = 'covers/'+key+'/LTB_'+str(n)+'.'+ext
               try:
-                if download_cover(img_url, path):
+                if dl(img_url, path):
                   ok += 1
-                  if ok % 50 == 0:
-                    print('  ...' + str(ok) + ' OK')
                 else:
                   skip += 1
-              except Exception as e:
+              except:
                 skip += 1
-
-              time.sleep(0.1)
-
+              time.sleep(0.08)
             print('  ' + key + ': ' + str(ok) + ' OK, ' + str(skip) + ' skip')
-            total_ok += ok
-            total_skip += skip
+            total_ok += ok; total_skip += skip
 
           print('\nGesamt: ' + str(total_ok) + ' OK, ' + str(total_skip) + ' skip')
           PYEOF
@@ -162,45 +150,35 @@ jobs:
       - name: Duplikate entfernen
         run: |
           python3 << 'PYEOF'
-          import hashlib, os
+          import hashlib, os, re
 
-          def file_hash(path):
-            with open(path, 'rb') as f:
-              return hashlib.md5(f.read()).hexdigest()
+          FOLDERS = ['haupt','spezial','enten','premium','ultimat','maus','crime','abenteuer',
+                     'history','fantasy','galaxy','europa','mystery','premplus','youngcom',
+                     'space','enstars','weihnacht','ostern','halloween','advent','sommer',
+                     'winter','royal','praesentiert','classic','ducktales']
 
-          SERIES = ['haupt','spezial','enten','premium','ultimat','maus','crime',
-                    'abenteuer','history','fantasy','galaxy','europa','mystery']
-
-          total_removed = 0
-          for key in SERIES:
+          total = 0
+          for key in FOLDERS:
             folder = 'covers/' + key
-            if not os.path.exists(folder):
-              continue
-            files = sorted(f for f in os.listdir(folder) if f.lower().endswith(('.jpg','.jpeg','.png','.JPG')))
+            if not os.path.exists(folder): continue
+            files = sorted(f for f in os.listdir(folder) if f.lower().endswith(('.jpg','.jpeg','.png')))
             hashes = {}
-            removed = []
             for fname in files:
               path = os.path.join(folder, fname)
-              h = file_hash(path)
+              h = hashlib.md5(open(path,'rb').read()).hexdigest()
               if h in hashes:
-                # Duplicate found - remove the lower-numbered one (it's wrongly assigned)
-                existing = hashes[h]
-                # Extract numbers
-                import re
-                n1 = int(re.search(r'_(\d+)\.', existing).group(1))
-                n2 = int(re.search(r'_(\d+)\.', fname).group(1))
-                to_remove = existing if n1 < n2 else fname
-                os.remove(os.path.join(folder, to_remove))
-                removed.append(to_remove)
-                # Keep the higher-numbered one
-                hashes[h] = fname if n1 < n2 else existing
+                nums1 = re.findall(r'\d+', hashes[h])
+                nums2 = re.findall(r'\d+', fname)
+                n1 = int(nums1[-1]) if nums1 else 0
+                n2 = int(nums2[-1]) if nums2 else 0
+                remove = hashes[h] if n1 < n2 else fname
+                os.remove(os.path.join(folder, remove))
+                hashes[h] = fname if n1 < n2 else hashes[h]
+                print('Dup entfernt: ' + key + '/' + remove)
+                total += 1
               else:
                 hashes[h] = fname
-            if removed:
-              print(key + ': ' + str(len(removed)) + ' Duplikate entfernt: ' + ', '.join(removed[:5]))
-              total_removed += len(removed)
-
-          print('Gesamt entfernt: ' + str(total_removed) + ' Duplikate')
+          print('Gesamt entfernt: ' + str(total))
           PYEOF
 
       - name: Committen
@@ -210,6 +188,6 @@ jobs:
           git add covers/
           git diff --staged --quiet && echo "Keine Aenderungen" || (
             COUNT=$(find covers -type f | wc -l)
-            git commit -m "Cover aktualisiert ($COUNT Dateien)"
+            git commit -m "Cover aktualisiert ($COUNT Dateien, 27 Reihen)"
             git push
           )
