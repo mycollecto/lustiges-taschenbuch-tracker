@@ -1,6 +1,6 @@
 # 🦆 Meine LTB-Sammlung
 
-Lesetracker für alle Lustigen Taschenbücher – Hauptreihe und Nebenreihen. Für Kinder (und Erwachsene) die abhaken wollen, welche Bände sie schon gelesen haben.
+Lesetracker für alle Lustigen Taschenbücher – Hauptreihe und 26 Nebenreihen. Für Kinder (und Erwachsene) die abhaken wollen, welche Bände sie schon gelesen haben.
 
 **Live:** https://meischer.github.io/ltb-tracker/
 
@@ -8,7 +8,7 @@ Lesetracker für alle Lustigen Taschenbücher – Hauptreihe und Nebenreihen. F�
 
 ## Features
 
-- 📚 **1.041 Bände** in 13 Reihen
+- 📚 **1.231 Bände** in 27 Reihen
 - 🖼️ **Echte Cover** von Duckipedia (wo verfügbar), sonst farbige Fallback-Karten
 - ✅ **Abhaken** mit Konfetti-Animation
 - 📊 **Fortschrittsbalken** pro Reihe
@@ -33,6 +33,20 @@ Lesetracker für alle Lustigen Taschenbücher – Hauptreihe und Nebenreihen. F�
 | LTB Galaxy | 6 | abgeschlossen |
 | LTB Europareise | 6 | aktiv |
 | LTB Mystery | 6 | aktiv |
+| LTB Premium + | 8 | abgeschlossen |
+| LTB Young Comics | 20 | aktiv |
+| LTB Space | 6 | abgeschlossen |
+| LTB Entenhausen Stars | 18 | eingestellt |
+| LTB Weihnachten | 32 | aktiv |
+| LTB Ostern | 17 | aktiv |
+| LTB Halloween | 11 | aktiv |
+| LTB Advent | 11 | aktiv |
+| LTB Sommer | 15 | aktiv |
+| LTB Winter | 7 | aktiv |
+| LTB Royal | 13 | aktiv |
+| LTB präsentiert | 8 | Pause |
+| LTB Classic Edition | 20 | abgeschlossen |
+| LTB DuckTales | 4 | abgeschlossen |
 
 ---
 
@@ -44,7 +58,7 @@ Lesetracker für alle Lustigen Taschenbücher – Hauptreihe und Nebenreihen. F�
 
 ## Cover aktualisieren
 
-Die Cover werden von [Duckipedia](https://de.duckipedia.org) geladen und im `covers/` Ordner gespeichert. Die GitHub Action scrapt die Galerie-Seiten und lädt alle verfügbaren Cover automatisch herunter.
+Die Action scrapt alle Galerie-Seiten auf Duckipedia und lädt verfügbare Cover automatisch herunter. Duplikate werden automatisch erkannt und entfernt.
 
 Bei neuen Bänden einfach die Action erneut ausführen.
 
