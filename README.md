@@ -1,4 +1,4 @@
-# 🦆 Meine LTB-Sammlung
+# 🦆 Meine Lustiges-Taschenbuch-Sammlung
 
 Lesetracker für alle Lustigen Taschenbücher – Hauptreihe und 26 Nebenreihen. Für Kinder (und Erwachsene) die abhaken wollen, welche Bände sie schon gelesen haben.
 
