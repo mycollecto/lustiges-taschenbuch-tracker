@@ -189,5 +189,6 @@ jobs:
           git diff --staged --quiet && echo "Keine Aenderungen" || (
             COUNT=$(find covers -type f | wc -l)
             git commit -m "Cover aktualisiert ($COUNT Dateien, 27 Reihen)"
+            git pull --rebase origin main
             git push
           )
